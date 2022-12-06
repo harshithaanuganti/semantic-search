@@ -7,3 +7,4 @@ Basic Demp App for the class MABA 6490
 Streamlit Demo App
 basic stuff
 >>>>>>> Stashed changes
+# semantic-search
