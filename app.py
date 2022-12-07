@@ -11,14 +11,16 @@ import pickle as pkl
 from sentence_transformers import SentenceTransformer, util
 import regex as re
 import torch
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import wordcloud
 from wordcloud import WordCloud
 
 st.title("Phuket Hotels' Review")
 st.markdown("Harshitha Anuganti | MSBA 6490 | Assignment2 | v1.0")
+st.set_option('deprecation.showPyplotGlobalUse', False)
 
 @st.cache(allow_output_mutation=True)
+
 def load_data():
     with open("df.pkl", "rb") as file1:
         df = pkl.load(file1)
@@ -44,7 +46,6 @@ def get_content(string):
 
 def run():
     query = st.text_input("Search Here:", "Phuket")
-    st.write(query)
     query_embeddings = model.encode(query, convert_to_tensor=True)
     top_k = min(5, len(corpus))
 
@@ -61,11 +62,14 @@ def run():
 
         wordcloud.generate(str(row_dict['sum_review']))
         # create a figure
-        fig, ax = plt.subplots(1, 1, figsize=(9, 6))
+        plt.figure(figsize = (8, 8), facecolor = None)
         # add interpolation = bilinear to smooth things out
-        plt.imshow(wordcloud, interpolation='bilinear')
+        plt.imshow(wordcloud)
         # and remove the axis
         plt.axis("off")
+        plt.tight_layout(pad=0)
+        plt.show()
+        st.pyplot()
 
 
 df = load_data()
