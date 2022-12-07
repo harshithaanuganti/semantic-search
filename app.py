@@ -54,11 +54,12 @@ def run():
     st.write("\n\n======================\n\n")
     st.write("Query:", query)
     st.write("\nTop 5 matches:")
+    df['Review Summary'] = df['sum_review']
 
     for score, idx in zip(top_results[0], top_results[1]):
         row_dict = df.loc[df['all_review']== corpus[idx]]
         st.write("Hotel:" , get_content(str(row_dict['hotelName'])))
-        st.write(row_dict['sum_review'], "(Score: {:.4f})".format(score),"\n")
+        st.write(row_dict['Review Summary'], "(Score: {:.4f})".format(score),"\n")
 
         wordcloud.generate(str(row_dict['all_review']))
         # create a figure
