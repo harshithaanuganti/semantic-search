@@ -53,7 +53,7 @@ def run():
     top_results = torch.topk(cos_scores, k=top_k)
     st.write("\n\n======================\n\n")
     st.write("Query:", query)
-    st.write("\nTop 5 most similar sentences in corpus:")
+    st.write("\nTop 5 matches:")
 
     for score, idx in zip(top_results[0], top_results[1]):
         row_dict = df.loc[df['all_review']== corpus[idx]]
