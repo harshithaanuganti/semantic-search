@@ -3,3 +3,7 @@ streamlit
 regex
 sentence_transformers
 pickleshare
+torch
+plotly
+matplotlib
+wordcloud

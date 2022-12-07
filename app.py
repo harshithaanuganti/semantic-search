@@ -7,30 +7,34 @@
 """
 
 import streamlit as st
-import pandas as pd
 import pickle as pkl
 from sentence_transformers import SentenceTransformer, util
-import re
+import regex as re
+import torch
+import matplotlib as plt
+import wordcloud
+from wordcloud import WordCloud
 
-import plotly.express as px
+st.title("Phuket Hotels' Review")
+st.markdown("Harshitha Anuganti | MSBA 6490 | Assignment2 | v1.0")
 
-st.title("Semantic Search")
-st.markdown("MSBA 6490 | Assignment2")
-st.markdown("This is v1.0")
-
-@st.cache(persist=True)
+@st.cache(allow_output_mutation=True)
 def load_data():
     with open("df.pkl", "rb") as file1:
         df = pkl.load(file1)
     return df
 
+def load_model():
+    with open("model.pkl", "rb") as file1:
+        model = pkl.load(file1)
+    return model
+
 def load_corpus():
     with open("corpus_embeddings.pkl", "rb") as file1:
         corpus_embeddings = pkl.load(file1)
-    return corpus_embeddings
-
-def load_model():
-    return SentenceTransformer('sentence-transformers/paraphrase-xlm-r-multilingual-v1')
+    with open("corpus.pkl", "rb") as file1:
+        corpus = pkl.load(file1)
+    return corpus, corpus_embeddings
 
 def get_content(string):
     string_pattern = r"(?<=    )(.*)"
@@ -39,27 +43,39 @@ def get_content(string):
     return str(regex_pattern.findall(string)[0])
 
 def run():
+    query = st.text_input("Search Here:", "Phuket")
+    st.write(query)
+    query_embeddings = model.encode(query, convert_to_tensor=True)
+    top_k = min(5, len(corpus))
 
-    df=load_data()
-    corpus_embeddings=load_corpus()
-    model=load_model()
+    cos_scores = util.pytorch_cos_sim(query_embeddings, corpus_embeddings)[0]
+    top_results = torch.topk(cos_scores, k=top_k)
+    st.write("\n\n======================\n\n")
+    st.write("Query:", query)
+    st.write("\nTop 5 most similar sentences in corpus:")
 
-    query = st.text_area("Search Here:")
-    query_embedding = model.encode(query, convert_to_tensor=True)
+    for score, idx in zip(top_results[0], top_results[1]):
+        row_dict = df.loc[df['all_review']== corpus[idx]]
+        st.write("Hotel:" , get_content(str(row_dict['hotelName'])))
+        st.write(row_dict['sum_review'], "(Score: {:.4f})".format(score),"\n")
 
-    hits = util.semantic_search(query_embedding, corpus_embeddings, top_k=st.slider('Maximum results to be displayed:', 0, 100, 25))
-    hits = hits[0]  # Get the hits for the first query
-
-    for hit in hits:
-        row_dict = df.loc[df['all_review'] == corpus[hit['corpus_id']]]
-        print("\nHotel:  ", get_content(str(row_dict['hotelName'])))
-        print(get_content(str(row_dict['sum_review'])), "\n")
-
-
-
-
+        wordcloud.generate(str(row_dict['sum_review']))
+        # create a figure
+        fig, ax = plt.subplots(1, 1, figsize=(9, 6))
+        # add interpolation = bilinear to smooth things out
+        plt.imshow(wordcloud, interpolation='bilinear')
+        # and remove the axis
+        plt.axis("off")
 
 
+df = load_data()
+corpus, corpus_embeddings= load_corpus()
+model = load_model()
+wordcloud = WordCloud(random_state = 8,
+        normalize_plurals = False,
+        width = 600, height= 300,
+        max_words = 300,
+        stopwords = [])
 
 if __name__ == '__main__':
     run()
