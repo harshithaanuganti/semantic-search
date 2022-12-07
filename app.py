@@ -60,7 +60,7 @@ def run():
         st.write("Hotel:" , get_content(str(row_dict['hotelName'])))
         st.write(row_dict['sum_review'], "(Score: {:.4f})".format(score),"\n")
 
-        wordcloud.generate(str(row_dict['sum_review']))
+        wordcloud.generate(str(row_dict['all_review']))
         # create a figure
         plt.figure(figsize = (8, 8), facecolor = None)
         # add interpolation = bilinear to smooth things out
